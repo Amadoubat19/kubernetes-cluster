@@ -1,0 +1,41 @@
+---
+- name: Variables include
+  include_vars: ../vars/main.yml
+
+- name: Send kubeadm config file
+  template:
+    src: conf.yml.j2
+    dest: /root/config.yml
+    owner: root
+    group: root
+
+- name: Init kubernetes cluster
+  shell: |
+    kubeadm init --config=/root/config.yml --ignore-preflight-errors=all
+
+- name: Create .kube directory
+  file:
+    path: /root/.kube
+    state: directory
+    mode: '0700'
+
+- name: Copy the kube config file
+  copy:
+   src: /etc/kubernetes/admin.conf
+   dest: /root/.kube/config
+   remote_src: yes
+
+- name: Install weave pod network and nginx ingress controller for the cluster
+  shell: |
+    kubectl apply -f "https://cloud.weave.works/k8s/net?k8s-version=$(kubectl version | base64 | tr -d '\n')"
+    kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.1.0/deploy/static/provider/cloud/deploy.yaml
+
+- name: Generate join command
+  command: kubeadm token create --print-join-command
+  register: join_command
+
+- name: Copy join command to local file for nodes
+  local_action: copy content="{{ join_command.stdout_lines[0] }}" dest="../../join-worker"
+
+- name: Copy join command to local file for other masters
+  local_action: copy content="{{ join_command.stdout_lines[0] }} --experimental-control-plane " dest="../../join-master"

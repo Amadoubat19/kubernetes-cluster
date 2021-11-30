@@ -1,0 +1,20 @@
+---
+- hosts: kubernetes
+  user: root
+  roles:
+    - common
+  
+- hosts: leader
+  user: root
+  roles:
+    - leader
+
+# - hosts: followers
+#   user: root
+#   roles:
+#     - followers
+
+- hosts: workers
+  user: root
+  roles:
+    - workers

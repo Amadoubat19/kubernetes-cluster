@@ -1,0 +1,1 @@
+kubectl patch svc ingress-nginx-nginx-ingress -n ingress-nginx -p '{"spec": {"type": "LoadBalancer", "externalIPs":["WORKER_IPS"]}}'

@@ -1,0 +1,7 @@
+apiVersion: kubeadm.k8s.io/v1beta2
+kind: ClusterConfiguration
+kubernetesVersion: stable
+apiServer:
+  certSANs:
+  - "{{load_balancer_dns}}"
+controlPlaneEndpoint: "{{load_balancer_dns}}:{{load_balancer_port}}"
